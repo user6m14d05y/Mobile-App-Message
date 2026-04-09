@@ -1,0 +1,17 @@
+# Backend
+Backend/node_modules/
+Backend/.env
+
+# Mobile (Flutter)
+Mobile/.dart_tool/
+Mobile/.flutter-plugins
+Mobile/.flutter-plugins-dependencies
+Mobile/.pub-cache/
+Mobile/build/
+Mobile/.idea/
+Mobile/*.iml
+
+# OS and IDE
+.DS_Store
+.vscode/
+*.log
