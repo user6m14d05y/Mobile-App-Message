@@ -4,6 +4,7 @@ import '../../../data/models/conversation_model.dart';
 import '../../providers/chat_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../../data/services/socket_service.dart';
+import '../../../data/models/message_model.dart';
 import '../../../data/services/api_service.dart';
 
 class ChatDetailScreen extends StatefulWidget {
@@ -42,8 +43,19 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     _controller.clear();
 
     try {
-      await ApiService().sendMessage(content, widget.conversation.id);
-      // Khi gửi xong, Backend sẽ emit qua Socket và ChatProvider sẽ tự bắt được ở hàm onMessageReceived
+      final response = await ApiService().sendMessage(content, widget.conversation.id);
+      
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final newMsgData = response.data;
+        
+        // 1. Cập nhật UI ngay lập tức cho người gửi
+        final chatProvider = context.read<ChatProvider>();
+        final newMessage = MessageModel.fromJson(newMsgData);
+        chatProvider.addMessage(newMessage);
+
+        // 2. Phát tin nhắn qua Socket.IO để backend gửi cho bạn chat
+        SocketService().sendMessage(newMsgData);
+      }
     } catch (e) {
       print('Send Message Error: $e');
     }
@@ -53,7 +65,11 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   Widget build(BuildContext context) {
     final chatProvider = context.watch<ChatProvider>();
     final authProvider = context.watch<AuthProvider>();
-    final otherUser = widget.conversation.users.firstWhere((u) => u.id != authProvider.user?.id);
+    
+    // Tìm người dùng khác trong cuộc hội thoại (không phải mình)
+    // Dùng List.where kết hợp cast để tránh lỗi nếu danh sách rỗng hoặc không tìm thấy
+    final otherUsers = widget.conversation.users.where((u) => u.id != authProvider.user?.id).toList();
+    final otherUser = otherUsers.isNotEmpty ? otherUsers.first : widget.conversation.users.first;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF6F8FD),
@@ -64,7 +80,16 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
           children: [
             Stack(
               children: [
-                CircleAvatar(backgroundImage: NetworkImage(otherUser.avatar)),
+                CircleAvatar(
+                  backgroundColor: Colors.grey.shade200,
+                  child: ClipOval(
+                    child: Image.network(
+                      otherUser.fullAvatarUrl,
+                      width: 40, height: 40, fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => const Icon(Icons.person, color: Colors.grey),
+                    ),
+                  ),
+                ),
                 if (otherUser.isOnline)
                   Positioned(
                     right: 0,

@@ -18,12 +18,30 @@ class ConversationModel {
     this.groupAdmin,
   });
 
+  ConversationModel copyWith({
+    String? id,
+    String? chatName,
+    bool? isGroupChat,
+    List<UserModel>? users,
+    MessageModel? latestMessage,
+    UserModel? groupAdmin,
+  }) {
+    return ConversationModel(
+      id: id ?? this.id,
+      chatName: chatName ?? this.chatName,
+      isGroupChat: isGroupChat ?? this.isGroupChat,
+      users: users ?? this.users,
+      latestMessage: latestMessage ?? this.latestMessage,
+      groupAdmin: groupAdmin ?? this.groupAdmin,
+    );
+  }
+
   factory ConversationModel.fromJson(Map<String, dynamic> json) {
     return ConversationModel(
       id: json['_id'] ?? '',
       chatName: json['chatName'],
       isGroupChat: json['isGroupChat'] ?? false,
-      users: (json['users'] as List?)
+      users: ((json['users'] ?? json['participants']) as List?)
               ?.map((u) => UserModel.fromJson(u))
               .toList() ??
           [],

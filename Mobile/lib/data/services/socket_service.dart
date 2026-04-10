@@ -3,6 +3,11 @@ import '../../core/constants/app_constants.dart';
 import '../models/user_model.dart';
 
 class SocketService {
+  
+  static final SocketService _instance = SocketService._internal();
+  factory SocketService() => _instance;
+  SocketService._internal();
+
   IO.Socket? socket;
 
   // Khởi tạo kết nối Socket
@@ -58,6 +63,12 @@ class SocketService {
 
   void onStopTyping(Function callback) {
     socket?.on('stop typing', (_) => callback());
+  }
+
+  void onUserStatusChanged(Function(dynamic) callback) {
+    socket?.on('user status changed', (data) {
+      callback(data);
+    });
   }
 
   // Hủy kết nối

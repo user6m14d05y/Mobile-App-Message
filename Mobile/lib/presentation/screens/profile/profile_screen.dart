@@ -2,9 +2,54 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/chat_provider.dart';
+import 'package:image_picker/image_picker.dart';
+import '../../../data/services/api_service.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
+
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  bool _isUploading = false;
+
+  Future<void> _pickImage() async {
+    final ImagePicker picker = ImagePicker();
+    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+
+    if (image != null) {
+      setState(() => _isUploading = true);
+      try {
+        final bytes = await image.readAsBytes();
+        
+        // 1. Upload ảnh lên server
+        final response = await ApiService().uploadImageBytes(bytes, image.name);
+        if (response.statusCode == 200 || response.statusCode == 201) {
+          final String avatarUrl = response.data; // Server trả về path /uploads/xxx
+          
+          // 2. Cập nhật profile
+          final authProvider = context.read<AuthProvider>();
+          await authProvider.updateUser(authProvider.user!.name, avatarUrl);
+          
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Cập nhật ảnh đại diện thành công!')),
+            );
+          }
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Lỗi khi tải ảnh lên')),
+          );
+        }
+      } finally {
+        if (mounted) setState(() => _isUploading = false);
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -40,16 +85,30 @@ class ProfileScreen extends StatelessWidget {
                         ),
                         child: CircleAvatar(
                           radius: 60,
-                          backgroundImage: NetworkImage(user?.avatar ?? ''),
+                          backgroundColor: Colors.grey.shade200,
+                          child: (user?.avatar == null || _isUploading) 
+                              ? const Icon(Icons.person, size: 60, color: Colors.grey) 
+                              : ClipOval(
+                                  child: Image.network(
+                                    user!.fullAvatarUrl,
+                                    width: 120, height: 120, fit: BoxFit.cover,
+                                    errorBuilder: (_, __, ___) => const Icon(Icons.broken_image, size: 60, color: Colors.grey),
+                                  ),
+                                ),
                         ),
                       ),
                       Positioned(
                         right: 5,
                         bottom: 5,
-                        child: Container(
-                          padding: const EdgeInsets.all(4),
-                          decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
-                          child: const Icon(Icons.edit, size: 20, color: Colors.grey),
+                        child: GestureDetector(
+                          onTap: _isUploading ? null : _pickImage,
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle, boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4)]),
+                            child: _isUploading 
+                                ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                                : const Icon(Icons.edit, size: 20, color: Color(0xFF3D4AA0)),
+                          ),
                         ),
                       )
                     ],
@@ -68,6 +127,7 @@ class ProfileScreen extends StatelessWidget {
                 ],
               ),
             ),
+
 
             const SizedBox(height: 32),
             // Stats

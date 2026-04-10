@@ -58,6 +58,20 @@ class AuthProvider extends ChangeNotifier {
     return false;
   }
 
+  Future<bool> updateUser(String name, String? avatarUrl) async {
+    try {
+      final response = await _apiService.updateProfile(name, avatarUrl);
+      if (response.statusCode == 200) {
+        _user = UserModel.fromJson(response.data);
+        notifyListeners();
+        return true;
+      }
+    } catch (e) {
+      print('Update Profile Error: $e');
+    }
+    return false;
+  }
+
   Future<void> logout() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('auth_token');

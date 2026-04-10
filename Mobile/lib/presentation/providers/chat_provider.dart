@@ -39,6 +39,18 @@ class ChatProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<ConversationModel?> accessConversation(String targetUserId) async {
+    try {
+      final response = await _apiService.createOrGetConversation(targetUserId);
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return ConversationModel.fromJson(response.data);
+      }
+    } catch (e) {
+      print('Access Conversation Error: $e');
+    }
+    return null;
+  }
+
   // --- MESSAGES ---
   Future<void> fetchMessages(String conversationId) async {
     _messages = [];
@@ -58,6 +70,19 @@ class ChatProvider extends ChangeNotifier {
 
   void addMessage(MessageModel message) {
     _messages.add(message);
+
+    // Cập nhật tin nhắn mới nhất ra ngoài màn hình Home (RECENT)
+    final index = _conversations.indexWhere((c) => c.id == message.conversationId);
+    if (index != -1) {
+      final convo = _conversations[index];
+      // Thay đổi latestMessage thành tin nhắn vừa nhận
+      final updatedConvo = convo.copyWith(latestMessage: message);
+      
+      // Đưa nó lên đầu danh sách (Vì là tin nhắn mới nhất)
+      _conversations.removeAt(index);
+      _conversations.insert(0, updatedConvo);
+    }
+
     notifyListeners();
   }
 
@@ -96,6 +121,17 @@ class ChatProvider extends ChangeNotifier {
     _socketService.onMessageReceived((data) {
       final newMessage = MessageModel.fromJson(data);
       addMessage(newMessage);
+    });
+
+    _socketService.onUserStatusChanged((data) {
+      final userId = data['userId'];
+      final isOnline = data['isOnline'];
+
+      final index = _friends.indexWhere((f) => f.id == userId);
+      if (index != -1) {
+        _friends[index] = _friends[index].copyWith(isOnline: isOnline);
+        notifyListeners();
+      }
     });
   }
 
