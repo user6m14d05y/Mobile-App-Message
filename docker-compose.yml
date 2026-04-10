@@ -1,0 +1,41 @@
+# version: '3.8'
+
+services:
+  # CỤM 1: BACKEND NODE.JS
+  backend:
+    build: 
+      context: ./Backend    # Trỏ vào thư mục lấy Dockerfile
+    container_name: message_backend
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./Backend:/app
+      - /app/node_modules
+    command: npm run dev
+    environment:
+      # Truyền biến môi trường trực tiếp, đè lên file .env
+      - PORT=5000
+      # Quan trọng: Chữ @mongodb thay vì localhost
+      - MONGO_URI=mongodb://admin:password123@mongodb:27017/message_db?authSource=admin
+      - JWT_SECRET=your_super_secret_jwt_key_change_this_in_production
+      - JWT_EXPIRES_IN=7d
+    depends_on:
+      - mongodb # Đợi Database chạy lên rồi mới chạy Node.js
+
+  # CỤM 2: DATABASE MONGODB
+  mongodb:
+    image: mongo:7
+    container_name: message_mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password123
+      MONGO_INITDB_DATABASE: message_db
+    volumes:
+      - mongo_data:/data/db
+
+volumes:
+  mongo_data:
