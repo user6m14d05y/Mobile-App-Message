@@ -20,10 +20,10 @@ class MessageModel {
   factory MessageModel.fromJson(Map<String, dynamic> json) {
     return MessageModel(
       id: json['_id'] ?? '',
-      senderId: json['sender'] is Map ? json['sender']['_id'] : json['sender'],
+      senderId: json['sender'] is Map ? (json['sender']['_id'] ?? '') : (json['sender'] ?? ''),
       content: json['content'] ?? '',
-      conversationId: json['conversation'] ?? '',
-      createdAt: DateTime.parse(json['createdAt']),
+      conversationId: json['conversation'] is Map ? json['conversation']['_id'] : (json['conversation'] ?? ''),
+      createdAt: json['createdAt'] != null ? DateTime.parse(json['createdAt']) : DateTime.now(),
       sender: json['sender'] is Map ? UserModel.fromJson(json['sender']) : null,
     );
   }

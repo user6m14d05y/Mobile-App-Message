@@ -4,6 +4,7 @@ import '../../providers/chat_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../../data/services/api_service.dart';
 import '../../../data/models/conversation_model.dart';
+import '../../../data/models/user_model.dart';
 import '../chat_detail/chat_detail_screen.dart';
 
 class CirclesScreen extends StatefulWidget {
@@ -36,7 +37,7 @@ class _CirclesScreenState extends State<CirclesScreen> {
     try {
       final response = await ApiService().searchUsers(query);
       if (response.statusCode == 200) {
-        setState(() => _searchResults = response.data);
+        setState(() => _searchResults = (response.data as List).map((u) => UserModel.fromJson(u)).toList());
       }
     } catch (e) {
       print('Search Users Error: $e');
@@ -112,14 +113,14 @@ class _CirclesScreenState extends State<CirclesScreen> {
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   child: ListTile(
                     leading: CircleAvatar(
-                      backgroundImage: NetworkImage(user['avatar']),
+                      backgroundImage: NetworkImage(user.fullAvatarUrl),
                       onBackgroundImageError: (_, __) {},
                       child: const Icon(Icons.person, color: Colors.white),
                     ),
-                    title: Text(user['name']),
+                    title: Text(user.name),
                     trailing: IconButton(
                       icon: const Icon(Icons.add_circle, color: Color(0xFF3D4AA0)),
-                      onPressed: () => _sendRequest(user['_id']),
+                      onPressed: () => _sendRequest(user.id),
                     ),
                   ),
                 )),
@@ -150,7 +151,7 @@ class _CirclesScreenState extends State<CirclesScreen> {
                   padding: const EdgeInsets.all(12),
                   child: Row(
                     children: [
-                      CircleAvatar(radius: 25, backgroundImage: NetworkImage(req.sender.avatar)),
+                      CircleAvatar(radius: 25, backgroundImage: NetworkImage(req.sender.fullAvatarUrl)),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Column(
@@ -177,7 +178,7 @@ class _CirclesScreenState extends State<CirclesScreen> {
               const SizedBox(height: 12),
               ...chatProvider.friends.map((friend) => ListTile(
                 contentPadding: EdgeInsets.zero,
-                leading: CircleAvatar(radius: 25, backgroundImage: NetworkImage(friend.avatar)),
+                leading: CircleAvatar(radius: 25, backgroundImage: NetworkImage(friend.fullAvatarUrl)),
                 title: Text(friend.name, style: const TextStyle(fontWeight: FontWeight.bold)),
                 subtitle: Text(friend.isOnline ? 'Online now' : 'Last seen recently', style: TextStyle(color: friend.isOnline ? Colors.green : Colors.grey, fontSize: 12)),
                 trailing: const Icon(Icons.chevron_right, color: Colors.grey),

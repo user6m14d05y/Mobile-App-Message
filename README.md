@@ -68,3 +68,8 @@ Nếu bạn vừa mới khởi tạo database, bạn có thể tạo tài khoả
 3. Commit các thay đổi (`git commit -m 'Add some AmazingFeature'`).
 4. Push lên Nhánh (`git push origin feature/AmazingFeature`).
 5. Mở một Pull Request.
+
+## Bổ sung hình ảnh
+
+1. cp env.example .env
+2. mkdir uploads

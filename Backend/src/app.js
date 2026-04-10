@@ -4,16 +4,24 @@ const cors = require('cors');
 const authRoutes = require('./routes/auth.routes');
 const userRoutes = require('./routes/user.routes');
 const messageRoutes = require('./routes/message.routes');
+const uploadRoutes = require('./routes/upload.routes');
 
+const path = require('path');
 const app = express();
 
 app.use(cors());
-app.use(express.json()); // Để server hiểu JSON body
+app.use(express.json());
+app.use('/uploads', (req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Cross-Origin-Resource-Policy', 'cross-origin');
+  next();
+}, express.static(path.join(__dirname, '../uploads')));
 
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/messages', messageRoutes);
+app.use('/api/upload', uploadRoutes);
 
 // Route mặc định kiểm tra server
 app.get('/', (req, res) => {

@@ -38,7 +38,7 @@ class _LoginScreenState extends State<LoginScreen> {
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Lỗi kết nối Server!')),
+        SnackBar(content: Text('Lỗi thực sự: $e')),
       );
     } finally {
       if (mounted) {

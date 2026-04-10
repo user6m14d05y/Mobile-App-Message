@@ -1,11 +1,19 @@
+const User = require('../models/User');
+
 const initSocket = (io) => {
   io.on('connection', (socket) => {
+    let currentUser = null;
     console.log('🔗 Connected to Socket.io');
 
     // User kết nối, tạo room riêng dựa trên userId
-    socket.on('setup', (userData) => {
+    socket.on('setup', async (userData) => {
+      currentUser = userData;
       socket.join(userData._id);
       socket.emit('connected');
+      
+      // Set online in DB and broadcast
+      await User.findByIdAndUpdate(userData._id, { isOnline: true });
+      io.emit('user status changed', { userId: userData._id, isOnline: true });
     });
 
     // Tham gia một phòng chat cụ thể
@@ -32,9 +40,20 @@ const initSocket = (io) => {
       });
     });
 
-    socket.off('setup', () => {
-      console.log('🔗 ƯSER DISCONNECTED');
-      socket.leave(userData._id);
+    socket.off('setup', async () => {
+      console.log('🔗 USER DISCONNECTED (setup off)');
+      if (currentUser) {
+        socket.leave(currentUser._id);
+      }
+    });
+
+    socket.on('disconnect', async () => {
+      if (currentUser) {
+        console.log(`🔗 USER DISCONNECTED: ${currentUser.name}`);
+        // Set offline in DB and broadcast
+        await User.findByIdAndUpdate(currentUser._id, { isOnline: false, lastSeen: new Date() });
+        io.emit('user status changed', { userId: currentUser._id, isOnline: false });
+      }
     });
   });
 };

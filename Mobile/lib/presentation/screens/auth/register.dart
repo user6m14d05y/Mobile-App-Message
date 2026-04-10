@@ -51,7 +51,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Lỗi: Email đã tồn tại hoặc điền thiếu!')),
+        SnackBar(content: Text('Lỗi thực sự: $e')),
       );
     } finally {
       setState(() => isLoading = false); // Tắt vòng xoay

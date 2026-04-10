@@ -50,6 +50,21 @@ class ApiService {
     return await _dio.get('${AppConstants.baseUrl}/users/profile');
   }
 
+  Future<Response> updateProfile(String name, String? avatarUrl) async {
+    return await _dio.put('${AppConstants.baseUrl}/users/profile', data: {
+      'name': name,
+      'avatar': avatarUrl,
+    });
+  }
+
+  Future<Response> uploadImageBytes(List<int> bytes, String fileName) async {
+    FormData formData = FormData.fromMap({
+      "image": MultipartFile.fromBytes(bytes, filename: fileName),
+    });
+
+    return await _dio.post('${AppConstants.baseUrl}/upload', data: formData);
+  }
+
   // --- CHAT API ---
   Future<Response> fetchConversations() async {
     return await _dio.get(AppConstants.getConversationsUrl);

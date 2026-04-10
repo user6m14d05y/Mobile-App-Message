@@ -129,13 +129,45 @@ const respondToFriendRequest = async (req, res) => {
   }
 };
 
-// @desc    Get Friends List
+// @desc    Get user friends
 // @route   GET /api/users/friends
 // @access  Private
 const getFriends = async (req, res) => {
   try {
     const user = await User.findById(req.user._id).populate('friends', 'name email avatar isOnline lastSeen');
-    res.json(user.friends);
+    if (user) {
+      res.json(user.friends);
+    } else {
+      res.status(404).json({ message: 'Không tìm thấy người dùng' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Update user profile
+// @route   PUT /api/users/profile
+// @access  Private
+const updateProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+
+    if (user) {
+      user.name = req.body.name || user.name;
+      if (req.body.avatar) {
+        user.avatar = req.body.avatar;
+      }
+      
+      const updatedUser = await user.save();
+      res.json({
+        _id: updatedUser._id,
+        name: updatedUser.name,
+        email: updatedUser.email,
+        avatar: updatedUser.avatar,
+      });
+    } else {
+      res.status(404).json({ message: 'Người dùng không tồn tại' });
+    }
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -148,5 +180,6 @@ module.exports = {
   getFriendRequests,
   respondToFriendRequest,
   getFriends,
+  updateProfile,
 };
 
