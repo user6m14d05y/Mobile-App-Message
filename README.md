@@ -37,6 +37,12 @@ Truy cập thư mục gốc của dự án và chạy:
 docker-compose up -d --build
 ```
 
+Hoặc không Cache
+
+```bash
+docker-compose up -d --build --no-cache
+```
+
 Lệnh này sẽ tự động:
 - Khởi chạy API server tại `http://localhost:5000`.
 - Khởi chạy một thực thể MongoDB.
@@ -73,3 +79,13 @@ Nếu bạn vừa mới khởi tạo database, bạn có thể tạo tài khoả
 
 1. cp env.example .env
 2. mkdir uploads
+
+## Connect Phone IP 
+
+1. Tìm IP của máy tính: `ipconfig` (Windows) hoặc `ifconfig` (Linux/Mac)
+2. Thay đổi `baseUrl` trong `lib/core/constants/app_constants.dart` thành `http://[IP_ADDRESS]/api`
+3. Thay đổi `socketUrl` trong `lib/core/constants/app_constants.dart` thành `http://[IP_ADDRESS]`
+4. Đảm bảo điện thoại và máy tính cùng kết nối một mạng Wifi
+5. Chạy lệnh `docker-compose up -d --build` trong thư mục gốc của dự án
+6. Chạy lệnh `flutter run --release -d web-server --web-hostname 0.0.0.0 --web-port 3000`
+7. Mở trình duyệt và truy cập `http://[IP_ADDRESS]:3000`

@@ -11,4 +11,4 @@ COPY . .
 # Mở port 5000 ra cho môi trường bên ngoài thấy
 EXPOSE 5000
 # Lệnh khởi chạy server (dùng node thay vì nodemon cho production)
-CMD ["npm", "start"]
+CMD ["npm", "run", "dev"]

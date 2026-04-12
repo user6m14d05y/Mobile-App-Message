@@ -8,8 +8,8 @@ class AppConstants {
   // static const String baseUrl = 'http://localhost:5000/api';
   // static const String socketUrl = 'http://localhost:5000';
 
-  static const String baseUrl = 'http://192.168.1.212:5000/api';
-  static const String socketUrl = 'http://192.168.1.212:5000';
+  static const String baseUrl = 'http://192.168.1.19:5000/api';
+  static const String socketUrl = 'http://192.168.1.19:5000';
 
   // API Endpoints
   static const String loginUrl = '/auth/login';
