@@ -1,6 +1,7 @@
 # Backend
 Backend/node_modules/
 Backend/.env
+.env
 
 # Mobile (Flutter)
 Mobile/.dart_tool/

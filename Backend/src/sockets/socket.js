@@ -3,7 +3,7 @@ const User = require('../models/User');
 const initSocket = (io) => {
   io.on('connection', (socket) => {
     let currentUser = null;
-    console.log('🔗 Connected to Socket.io');
+    console.log('Connected to Socket.io');
 
     // User kết nối, tạo room riêng dựa trên userId
     socket.on('setup', async (userData) => {
@@ -41,7 +41,7 @@ const initSocket = (io) => {
     });
 
     socket.off('setup', async () => {
-      console.log('🔗 USER DISCONNECTED (setup off)');
+      console.log('USER DISCONNECTED (setup off)');
       if (currentUser) {
         socket.leave(currentUser._id);
       }
@@ -49,7 +49,7 @@ const initSocket = (io) => {
 
     socket.on('disconnect', async () => {
       if (currentUser) {
-        console.log(`🔗 USER DISCONNECTED: ${currentUser.name}`);
+        console.log(`USER DISCONNECTED: ${currentUser.name}`);
         // Set offline in DB and broadcast
         await User.findByIdAndUpdate(currentUser._id, { isOnline: false, lastSeen: new Date() });
         io.emit('user status changed', { userId: currentUser._id, isOnline: false });
